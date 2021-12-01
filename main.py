@@ -1,6 +1,6 @@
 # tetris main window, menu, scores, game scene, icons, etc
 import pyglet
-from game_scene import GameScene
+from game.scene import GUI
 
 # window settings
 SCREEN_TITLE = "Tetris in Arcade"
@@ -13,32 +13,13 @@ class GameWindow(pyglet.window.Window):
 
     def __init__(self, width, height, title):
         super(GameWindow, self).__init__(width=width, height=height, caption=title)
-        self.gsc = GameScene(SCREEN_WIDTH, SCREEN_HEIGHT)
-        
+        self.gsc = GUI(SCREEN_WIDTH, SCREEN_HEIGHT)
+     
     def on_key_press(self, key, modifiers):
-        """Called whenever a key is pressed. """
-        if key == pyglet.window.key.LEFT:
-            print("LEFT")
-            self.gsc.left_key()
-        if key == pyglet.window.key.RIGHT:
-            print("RIGHT")
-            self.gsc.right_key()
-        if key == pyglet.window.key.UP:
-            print("UP")
-            self.gsc.up_key()
-        if key == pyglet.window.key.DOWN:
-            print("DOWN")
-            self.gsc.down_key()
-        if key == pyglet.window.key.SPACE:
-            print("SPACE")
-            self.gsc.space_key()
-        if key == pyglet.window.key.ESCAPE:
-            pyglet.app.exit()
-        if key == pyglet.window.key.P:
-            pass
+        self.gsc.on_key_press(key, modifiers)
 
     def on_key_release(self, key, modifiers):
-        """Called when the user releases a key. """
+        """Called when the user releases a key."""
         pass
 
     def on_update(self, delta_time):

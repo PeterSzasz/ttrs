@@ -10,8 +10,8 @@
 
 import pyglet
 
-from tetris_map import TetrisMap
-from tetris_shapes import TetrisShapes
+from game.assets import Map, Shapes
+from game.states import GameState, Menu, Running, Scores
 
 # game settings
 GRID_WIDTH = 40
@@ -20,10 +20,11 @@ LEFT_BORDER = 7     # conclusive
 RIGHT_BORDER = 15
 MAP_WIDTH = RIGHT_BORDER - LEFT_BORDER
 
-class GameScene:
+class GUI:
     def __init__(self, width, height) -> None:
         '''scene assets, settings, modes, etc'''
 
+        self.state = Running()
         self.test_shape = 'L-shape'
         self.game_mode = "running"  # menu, running, paused, exit, scores
         self.width = width
@@ -31,8 +32,8 @@ class GameScene:
         map_height = (height // GRID_HEIGHT)
         print(MAP_WIDTH)
         print(map_height)
-        self.shapes = TetrisShapes()
-        self.playground = TetrisMap(MAP_WIDTH, map_height)
+        self.shapes = Shapes()
+        self.playground = Map(MAP_WIDTH, map_height)
         self.player_pivot = (MAP_WIDTH//2,map_height-5)
         print(self.player_pivot)
         self.assets()
@@ -40,6 +41,12 @@ class GameScene:
         self.update_pivot()
         self.draw_playground()
     
+    def set_state(self, new_state):
+        self.state = new_state
+
+    def get_state(self):
+        return self.state
+
     def draw_background(self):
         col = 0
         row = 0
@@ -93,41 +100,10 @@ class GameScene:
                         self.playground.color_grid(x,y,None)
                     else:
                         self.playground.color_grid(x,y,color)
-    
-    def space_key(self):
-        if self.game_mode == "running": # and rotating doesn't collide with border
-            self.update_pivot(clear=True)
-            self.shapes.rotate(self.test_shape)
-            self.update_pivot()
-            self.draw_playground()
-
-    def left_key(self):
-        if self.game_mode == "running" and 0 < self.player_pivot[0]+self.shapes.tetriminos[self.test_shape]['bottom_left'][0]:
-            self.update_pivot(clear=True)
-            self.player_pivot = (self.player_pivot[0]-1,self.player_pivot[1])
-            self.update_pivot()
-            self.draw_playground()
-
-    def right_key(self):
-        if self.game_mode == "running"and self.player_pivot[0]+self.shapes.tetriminos[self.test_shape]['top_right'][0] < MAP_WIDTH-1:
-            self.update_pivot(clear=True)
-            self.player_pivot = (self.player_pivot[0]+1,self.player_pivot[1])
-            self.update_pivot()
-            self.draw_playground()
-
-    def up_key(self):
-        if self.game_mode == "running" and self.player_pivot[1]+self.shapes.tetriminos[self.test_shape]['top_right'][1] < (self.height//GRID_HEIGHT)-1:
-            self.update_pivot(clear=True)
-            self.player_pivot = (self.player_pivot[0],self.player_pivot[1]+1)
-            self.update_pivot()
-            self.draw_playground()
-
-    def down_key(self):
-        if self.game_mode == "running" and 0 < self.player_pivot[1]-self.shapes.tetriminos[self.test_shape]['bottom_left'][1]:
-            self.update_pivot(clear=True)
-            self.player_pivot = (self.player_pivot[0],self.player_pivot[1]-1)
-            self.update_pivot()
-            self.draw_playground()
+       
+    def on_key_press(self, key, modifiers):
+        """Called whenever a key is pressed. """
+        self.state.on_key_press(key, modifiers)
 
     def draw(self):
         self.image.blit(0,0)
