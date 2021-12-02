@@ -1,12 +1,11 @@
-#
-#
-#
+
+# state pattern classes; GameState base class for Menu,Scores,etc
+# context is the GUI class
 
 from pyglet import window
 from pyglet.app import exit
 from pyglet.text import Label
 from pyglet.image import SolidColorImagePattern
-
 from game.assets import Map, Shapes
 
 class GameState:
@@ -35,7 +34,19 @@ class Menu(GameState):
     def __init__(self, context=None) -> None:
         ''''''
         self.context = context
-        self.label = Label("", x=20, y=self.context.height-25, font_size=15, color=(200,200,200,255),)
+        toprow = self.context.height - 226
+        offset = self.context.grid_height
+        self.label1 = Label("", x=20, y=toprow-offset*0, font_size=15, color=(200,200,200,255),)
+        self.label2 = Label("", x=20, y=toprow-offset*1, font_size=15, color=(200,200,200,255),)
+        self.label3 = Label("", x=20, y=toprow-offset*2, font_size=15, color=(200,200,200,255),)
+        self.label4 = Label("", x=20, y=toprow-offset*3, font_size=15, color=(200,200,200,255),)
+        self.label5 = Label("", x=20, y=toprow-offset*4, font_size=15, color=(200,200,200,255),)
+        
+        self.label1.text = f"TETR1S"
+        self.label2.text = f"Press [SPACE] to Start"
+        self.label3.text = f"Press [ESCAPE] to escape"
+        self.label4.text = f"Up/Down sets speed {Running.speed}"
+        self.label5.text = f"TETR1S"
 
     def set_context(self, context):
         self.context = context
@@ -43,20 +54,15 @@ class Menu(GameState):
     def on_key_press(self, key, modifiers):
         ''''''
         if key == window.key.LEFT:
-            print("LEFT")
             self.left_key()
         if key == window.key.RIGHT:
-            print("RIGHT")
             self.right_key()
         if key == window.key.UP:
-            print("UP")
             self.up_key()
         if key == window.key.DOWN:
-            print("DOWN")
             self.down_key()
         if key == window.key.SPACE:
-            print("SPACE")
-            self.context.set_state(Running(self.context))
+            self.space_key()
         if key == window.key.ESCAPE:
             exit()
 
@@ -66,15 +72,19 @@ class Menu(GameState):
 
     def on_update(self, delta_time):
         ''''''
-        self.label.text = f"TETR1S {delta_time}"
+        pass
 
     def on_draw(self):
         ''''''
-        self.label.draw()
+        self.label1.draw()
+        self.label2.draw()
+        self.label3.draw()
+        self.label4.draw()
+        self.label5.draw()
 
     def space_key(self):
         ''''''
-        pass
+        self.context.set_state(Running(new_game=True,context=self.context))
 
     def left_key(self):
         ''''''
@@ -86,30 +96,38 @@ class Menu(GameState):
 
     def up_key(self):
         ''''''
-        pass
+        Running.speed += 1
+        if Running.speed > 5:
+            Running.speed = 5
+        self.label4.text = f"Up/Down sets speed: {Running.speed}"
 
     def down_key(self):
         ''''''
-        pass
+        Running.speed -= 1
+        if Running.speed < 1:
+            Running.speed = 1
+        self.label4.text = f"Up/Down sets speed: {Running.speed}"
 
 
 class Running(GameState):
     '''Game state for gameplay. Draws playground, handles shapes, scores, etc'''
     score = 0
-    level = 1
+    speed = 1
 
-    def __init__(self, context=None) -> None:
+    def __init__(self, new_game=True, context=None) -> None:
         ''''''
         self.context = context
-        self.test_shape = 'L-shape'
-        self.label = Label("", x=20, y=self.context.height-25, font_size=15, color=(200,200,200,255),)
         self.grid_width = self.context.grid_width
         self.grid_height = self.context.grid_height
         self.left_border = 7     # conclusive
         self.right_border = 15
         map_width = self.right_border - self.left_border
         map_height = (self.context.height // self.context.grid_height)
+        self.label = Label("", x=20, y=self.context.height-226, font_size=15, color=(200,200,200,255),)
+        if new_game:
+            Running.score = 0
         self.shapes = Shapes()
+        self.test_shape = 'L-shape'
         self.playground = Map(map_width, map_height)
         self.player_pivot = (map_width//2,map_height-5)
 
@@ -171,24 +189,19 @@ class Running(GameState):
     def on_key_press(self, key, modifiers):
         ''''''
         if key == window.key.LEFT:
-            print("LEFT")
             self.left_key()
         if key == window.key.RIGHT:
-            print("RIGHT")
             self.right_key()
         if key == window.key.UP:
-            print("UP")
             self.up_key()
         if key == window.key.DOWN:
-            print("DOWN")
             self.down_key()
         if key == window.key.SPACE:
-            print("SPACE")
             self.space_key()
         if key == window.key.ESCAPE:
-            self.context.set_state(Menu(self.context))
+            self.esc_key()
         if key == window.key.S:
-            self.context.set_state(Scores(self.context))
+            self.s_key()
 
     def on_key_release(self, key, modifiers):
         ''''''
@@ -196,13 +209,18 @@ class Running(GameState):
 
     def on_update(self, delta_time):
         ''''''
-        self.label.text = f"Level: {Running.level}  Score: {Running.score}"
+        self.label.text = f"Speed: {Running.speed}  Score: {Running.score}"
 
     def on_draw(self):
         ''''''
-        #self.update_pivot()
         self.draw_playground()
         self.label.draw()
+
+    def esc_key(self):
+        self.context.set_state(Menu(self.context))
+
+    def s_key(self):
+        self.context.set_state(Scores(self.context))
 
     def space_key(self):
         Running.score += 1
@@ -237,10 +255,11 @@ class Running(GameState):
 
 
 class Scores(GameState):
+    max_score = 0
     def __init__(self, context=None) -> None:
         ''''''
         self.context = context
-        self.label = Label(f"High Scores: {Running.score}", x=20, y=self.context.height-25, font_size=15, color=(200,200,200,255),)
+        self.label = Label(f"High Score: {Scores.max_score}", x=20, y=self.context.height-226, font_size=15, color=(200,200,200,255),)
 
     def set_context(self, context):
         self.context = context
@@ -248,40 +267,21 @@ class Scores(GameState):
     def on_key_press(self, key, modifiers):
         ''''''
         if key == window.key.SPACE:
-            print("SPACE")
-            self.context.set_state(Menu(self.context))
+            self.space_key()
         if key == window.key.ESCAPE:
-            print("ESC")
-            self.context.set_state(Menu(self.context))
-
-    def on_key_release(self, key, modifiers):
-        ''''''
-        pass
+            self.esc_key()
 
     def on_update(self, delta_time):
         ''''''
-        pass
+        Scores.max_score = max(Scores.max_score, Running.score)
+        self.label.text = f"High Score: {Scores.max_score}"
 
     def on_draw(self):
         ''''''
         self.label.draw()
 
+    def esc_key(self):
+        self.context.set_state(Menu(self.context))
+
     def space_key(self):
-        ''''''
-        pass
-
-    def left_key(self):
-        ''''''
-        pass
-
-    def right_key(self):
-        ''''''
-        pass
-
-    def up_key(self):
-        ''''''
-        pass
-
-    def down_key(self):
-        ''''''
-        pass
+        self.context.set_state(Running(new_game=False,context=self.context))

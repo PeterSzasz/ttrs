@@ -1,11 +1,12 @@
-# tetris main window, menu, scores, game scene, icons, etc
+
+# tetris main window, state initialization, main loop start
+
 from pyglet.window import Window
 from pyglet import app, clock
 from game.scene import GUI
-from game.states import GameState, Menu, Running, Scores
+from game.states import Menu, Running, Scores
 
-# window settings
-SCREEN_TITLE = "Tetris in Arcade"
+SCREEN_TITLE = "Tetris in pyglet"
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
@@ -16,7 +17,7 @@ class GameWindow(Window):
     def __init__(self, width, height, title):
         super(GameWindow, self).__init__(width=width, height=height, caption=title)
         self.gui = GUI(SCREEN_WIDTH, SCREEN_HEIGHT)
-        initial_state = Running(self.gui)
+        initial_state = Menu(self.gui)
         self.gui.set_state(initial_state)
      
     def on_key_press(self, key, modifiers):
@@ -32,9 +33,7 @@ class GameWindow(Window):
 
     def on_draw(self):
         """ Draw everything """
-        self.clear()
         self.gui.on_draw()
-                
 
 
 if __name__ == "__main__":

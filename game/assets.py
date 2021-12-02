@@ -1,6 +1,5 @@
-# 
+
 # tetris map represented by a 2d array
-# 
 
 class Map:
     def __init__(self, map_width=10, map_height=20) -> None:
@@ -18,9 +17,7 @@ class Map:
         if  0<=x and x<self.map_width and \
             0<=y and y<self.map_height and \
             self.table[x][y] is not None:
-                #print(f"checking: {x} {y} {self.map[x][y]}")
                 return self.table[x][y]
-        #print(f"checking: {x} {y}")
         return None
 
     def color_grid(self, x, y, color):
@@ -93,8 +90,6 @@ class Shapes:
             if max_coord < coord: max_coord = coord
         self.tetriminos[shape]['bottom_left'] = min_coord
         self.tetriminos[shape]['top_right'] = max_coord
-        print(f"min coord: {min_coord}")
-        print(f"max coord: {max_coord}")
 
 if __name__ == '__main__':
     ts = Shapes()
