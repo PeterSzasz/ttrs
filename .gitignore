@@ -2,3 +2,6 @@
 /__pycache__
 game/__pycache__
 .vscode/launch.json
+/build
+/dist
+main.spec

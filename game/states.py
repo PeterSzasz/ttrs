@@ -2,6 +2,7 @@
 # state pattern classes; GameState base class for Menu,Scores,etc
 # context is the GUI class
 
+from time import time
 from pyglet import window
 from pyglet.app import exit
 from pyglet.text import Label
@@ -45,7 +46,7 @@ class Menu(GameState):
         self.label1.text = f"TETR1S"
         self.label2.text = f"Press [SPACE] to Start"
         self.label3.text = f"Press [ESCAPE] to escape"
-        self.label4.text = f"Up/Down sets speed {Running.speed}"
+        self.label4.text = f"Up/Down sets speed: {Running.speed}"
         self.label5.text = f"TETR1S"
 
     def set_context(self, context):
@@ -127,9 +128,10 @@ class Running(GameState):
         if new_game:
             Running.score = 0
         self.shapes = Shapes()
-        self.test_shape = 'L-shape'
+        #self.test_shape = 'L-shape'
         self.playground = Map(map_width, map_height)
-        self.player_pivot = (map_width//2,map_height-5)
+        self.player_pivot = (map_width//2,map_height-4)
+        self.prev_time = time()
 
         self.black_box = SolidColorImagePattern((0,0,0,255)).create_image(self.grid_width-1,self.grid_height-1)
         self.red_box = SolidColorImagePattern((220,150,110,255)).create_image(self.grid_width-1,self.grid_height-1)
@@ -149,9 +151,9 @@ class Running(GameState):
                 # middle green playground
                 if self.left_border<=col and col<self.right_border:
                     self.context.image.blit_into(self.green_box, x+1, y+1, 0)
-                    # tetris tetriminos
+                    # tetris tetrominoes
                     scene_coords = (col-self.left_border, row)
-                    grid_color = self.playground.check_grid(*scene_coords)
+                    grid_color = self.playground.get_grid_color(*scene_coords)
                     if grid_color is not None:
                         if grid_color == "blue":
                             self.context.image.blit_into(self.blue_box, x+1, y+1, 0)
@@ -163,28 +165,11 @@ class Running(GameState):
                         if grid_color == "red":
                             self.context.image.blit_into(self.red_box, x+1, y+1, 0)
                             self.context.image.blit_into(self.red_inner_box, x+1, y+3, 0)
-                            #self.context.image.blit_into(self.white_pixel, x+1, y+self.grid_height-2, 0)
-                            #self.context.image.blit_into(self.white_pixel, x+3, y+self.grid_height-4, 0)
-                            #self.context.image.blit_into(self.white_pixel, x+3, y+self.grid_height-6, 0)
-                            #self.context.image.blit_into(self.white_pixel, x+5, y+self.grid_height-4, 0)
                         if grid_color == 'black':
                             self.context.image.blit_into(self.black_box, x+1, y+1, 0)
                 row += 1
             col += 1
             row = 0
-
-    def update_pivot(self, clear=False):
-        t_minos = self.shapes.tetriminos[self.test_shape]
-        for box in t_minos['shape']:
-            color = t_minos['color']
-            x = self.player_pivot[0] + box[0]
-            y = self.player_pivot[1] + box[1]
-            if  0<=x and x<self.context.width and \
-                0<=y and y<self.context.height:
-                    if clear:
-                        self.playground.color_grid(x,y,None)
-                    else:
-                        self.playground.color_grid(x,y,color)
 
     def on_key_press(self, key, modifiers):
         ''''''
@@ -192,8 +177,6 @@ class Running(GameState):
             self.left_key()
         if key == window.key.RIGHT:
             self.right_key()
-        if key == window.key.UP:
-            self.up_key()
         if key == window.key.DOWN:
             self.down_key()
         if key == window.key.SPACE:
@@ -210,6 +193,11 @@ class Running(GameState):
     def on_update(self, delta_time):
         ''''''
         self.label.text = f"Speed: {Running.speed}  Score: {Running.score}"
+        min_delay = 1/Running.speed
+        if time() - self.prev_time > min_delay:
+            self.playground.update_player_shape(0,-1)
+            #self.draw_playground()
+            self.prev_time = time()
 
     def on_draw(self):
         ''''''
@@ -224,33 +212,19 @@ class Running(GameState):
 
     def space_key(self):
         Running.score += 1
-        self.update_pivot(clear=True)
-        self.shapes.rotate(self.test_shape)
-        self.update_pivot()
+        self.playground.rotate_player()
         self.draw_playground()
 
     def left_key(self):
-        self.update_pivot(clear=True)
-        self.player_pivot = (self.player_pivot[0]-1,self.player_pivot[1])
-        self.update_pivot()
+        self.playground.update_player_shape(-1,0)
         self.draw_playground()
 
     def right_key(self):
-        self.update_pivot(clear=True)
-        self.player_pivot = (self.player_pivot[0]+1,self.player_pivot[1])
-        self.update_pivot()
-        self.draw_playground()
-
-    def up_key(self):
-        self.update_pivot(clear=True)
-        self.player_pivot = (self.player_pivot[0],self.player_pivot[1]+1)
-        self.update_pivot()
+        self.playground.update_player_shape(1,0)
         self.draw_playground()
 
     def down_key(self):
-        self.update_pivot(clear=True)
-        self.player_pivot = (self.player_pivot[0],self.player_pivot[1]-1)
-        self.update_pivot()
+        self.playground.update_player_shape(0,-1)
         self.draw_playground()
 
 

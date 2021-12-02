@@ -1,26 +1,93 @@
 
 # tetris map represented by a 2d array
 
+import random
+
 class Map:
     def __init__(self, map_width=10, map_height=20) -> None:
         self.map_width = map_width
         self.map_height = map_height
+        self.shapes = Shapes()
         self.table = [[None]*map_height for _ in range(map_width)]
+        rand_shape = random.choice(list(self.shapes.tetrominoes.keys()))
+        self.player_shape = self.shapes.tetrominoes[rand_shape]
+        self.player_pivot = (map_width//2,map_height-4)
         self.test_assets()
         
-    def check_grid(self, x, y):
+    def update_player_shape(self, offset_x, offset_y ):
+        valid = True
+        for grid in self.player_shape['coords']:
+            x = self.player_pivot[0] + grid[0] + offset_x
+            y = self.player_pivot[1] + grid[1] + offset_y
+            if not self.is_valid(x,y):
+                valid = False
+        if valid:
+            for grid in self.player_shape['coords']:
+                x = self.player_pivot[0] + grid[0]
+                y = self.player_pivot[1] + grid[1]
+                self.color_grid(x,y,None)
+            self.player_pivot = (self.player_pivot[0] + offset_x, self.player_pivot[1] + offset_y)
+            color = self.player_shape['color']
+            for grid in self.player_shape['coords']:
+                x = self.player_pivot[0] + grid[0]
+                y = self.player_pivot[1] + grid[1]
+                self.color_grid(x,y,color)
+
+    def rotate_player(self, clockwise=True):
+        new_shape_coords = []
+        valid = True
+        for coord in self.player_shape['coords']:
+            if clockwise:                    
+                new_shape_coords.append( (coord[1],-1*coord[0]) )
+            else:
+                new_shape_coords.append( (-1*coord[1],coord[0]) )
+        for grid in new_shape_coords:
+            if not self.is_valid(self.player_pivot[0] + grid[0],self.player_pivot[1] + grid[1]):
+                valid = False
+        if valid:
+            for grid in self.player_shape['coords']:
+                x = self.player_pivot[0] + grid[0]
+                y = self.player_pivot[1] + grid[1]
+                self.color_grid(x,y,None)
+            self.player_shape['coords'] = new_shape_coords
+            color = self.player_shape['color']
+            for grid in self.player_shape['coords']:
+                x = self.player_pivot[0] + grid[0]
+                y = self.player_pivot[1] + grid[1]
+                self.color_grid(x,y,color)
+
+    def is_valid(self, x, y):
         '''
         input:
         x: [int] starts with 0
         y: [int] starts with 0
         '''
         if  0<=x and x<self.map_width and \
-            0<=y and y<self.map_height and \
-            self.table[x][y] is not None:
+            0<=y and y<self.map_height:
+                return True
+        return False
+
+    def get_grid_color(self, x, y):
+        '''
+        input:
+        x: [int] starts with 0
+        y: [int] starts with 0
+        '''
+        if self.is_valid(x,y) and self.table[x][y] is not None:
                 return self.table[x][y]
         return None
 
+    def is_row_filled(self, row):
+        ''''''
+        filled = True
+        y = row
+        for x in range(self.map_width):
+            if self.table[x][y] is None:
+                filled = False
+        return filled
+
     def color_grid(self, x, y, color):
+        ''''''
         if  0<=x and x<self.map_width and \
             0<=y and y<self.map_height and \
             (color == 'red' or color == 'blue' or color == None):
@@ -60,9 +127,9 @@ class Map:
 
 class Shapes:
     def __init__(self) -> None:
-        self.tetriminos = {
-            'box':{'shape':[(-1,-1),(0,-1),(0,0),(-1,0)],'bottom_left':(-1,-1),'top_right':(0,0),'color':'red'},
-            'L-shape':{'shape':[(-1,-1),(0,-1),(0,0),(0,1)],'bottom_left':(-1,-1),'top_right':(0,1),'color':'red'}
+        self.tetrominoes = {
+            'box':{'coords':[(-1,-1),(0,-1),(0,0),(-1,0)],'bottom_left':(-1,-1),'top_right':(0,0),'color':'red'},
+            'L-shape':{'coords':[(-1,-1),(0,-1),(0,0),(0,1)],'bottom_left':(-1,-1),'top_right':(0,1),'color':'red'}
             }
 
     def rotate(self, shape, clockwise=True):
@@ -74,31 +141,31 @@ class Shapes:
         cc: sin(90)=1 cos(90)=0
         [cos]
         '''
-        if shape in self.tetriminos.keys():
-            shape_coords = self.tetriminos[shape]['shape']
+        if shape in self.tetrominoes.keys():
+            shape_coords = self.tetrominoes[shape]['coords']
             new_shape_coords = []
             for coord in shape_coords:
                 if clockwise:                    
                     new_shape_coords.append( (coord[1],-1*coord[0]) )
                 else:
                     new_shape_coords.append( (-1*coord[1],coord[0]) )
-            self.tetriminos[shape]['shape'] = new_shape_coords
+            self.tetrominoes[shape]['coords'] = new_shape_coords
         min_coord = (100,100)
         max_coord = (-100,-100)
-        for coord in self.tetriminos[shape]['shape']:
+        for coord in self.tetrominoes[shape]['coords']:
             if coord < min_coord: min_coord = coord
             if max_coord < coord: max_coord = coord
-        self.tetriminos[shape]['bottom_left'] = min_coord
-        self.tetriminos[shape]['top_right'] = max_coord
+        self.tetrominoes[shape]['bottom_left'] = min_coord
+        self.tetrominoes[shape]['top_right'] = max_coord
 
 if __name__ == '__main__':
     ts = Shapes()
-    print(ts.tetriminos['box'])
+    print(ts.tetrominoes['box'])
     ts.rotate('box')
-    print(ts.tetriminos['box'])
+    print(ts.tetrominoes['box'])
     ts.rotate('box')
-    print(ts.tetriminos['box'])
+    print(ts.tetrominoes['box'])
     ts.rotate('box')
-    print(ts.tetriminos['box'])
+    print(ts.tetrominoes['box'])
     ts.rotate('box')
-    print(ts.tetriminos['box'])
+    print(ts.tetrominoes['box'])
