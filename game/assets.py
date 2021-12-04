@@ -11,7 +11,7 @@ class Map:
         self.table = [[None]*map_height for _ in range(map_width)]
         rand_shape = random.choice(list(self.shapes.tetrominoes.keys()))
         self.player_shape = self.shapes.tetrominoes[rand_shape]
-        self.player_pivot = (map_width//2,map_height-4)
+        self.player_pivot = (map_width//2,map_height-1)
         self.test_assets()
         
     def update_player_shape(self, offset_x, offset_y ):
@@ -63,7 +63,7 @@ class Map:
         y: [int] starts with 0
         '''
         if  0<=x and x<self.map_width and \
-            0<=y and y<self.map_height:
+            0<=y:
                 return True
         return False
 
@@ -129,7 +129,10 @@ class Shapes:
     def __init__(self) -> None:
         self.tetrominoes = {
             'box':{'coords':[(-1,-1),(0,-1),(0,0),(-1,0)],'bottom_left':(-1,-1),'top_right':(0,0),'color':'red'},
-            'L-shape':{'coords':[(-1,-1),(0,-1),(0,0),(0,1)],'bottom_left':(-1,-1),'top_right':(0,1),'color':'red'}
+            'L-shape':{'coords':[(-1,-1),(0,-1),(0,0),(0,1)],'bottom_left':(-1,-1),'top_right':(0,1),'color':'red'},
+            'line':{'coords':[(0,-2),(0,-1),(0,0),(0,1)],'bottom_left':(0,-2),'top_right':(0,1),'color':'red'},
+            'T-shape':{'coords':[(-1,-1),(0,-1),(1,-1),(0,0)],'bottom_left':(-1,-1),'top_right':(1,0),'color':'red'},
+            'Z-shape':{'coords':[(-1,-1),(0,-1),(0,0),(1,0)],'bottom_left':(-1,-1),'top_right':(1,0),'color':'red'}
             }
 
     def rotate(self, shape, clockwise=True):

@@ -128,17 +128,15 @@ class Running(GameState):
         if new_game:
             Running.score = 0
         self.shapes = Shapes()
-        #self.test_shape = 'L-shape'
         self.playground = Map(map_width, map_height)
-        self.player_pivot = (map_width//2,map_height-4)
         self.prev_time = time()
-
         self.black_box = SolidColorImagePattern((0,0,0,255)).create_image(self.grid_width-1,self.grid_height-1)
         self.red_box = SolidColorImagePattern((220,150,110,255)).create_image(self.grid_width-1,self.grid_height-1)
         self.red_inner_box = SolidColorImagePattern((220,110,70,255)).create_image(self.grid_width-3,self.grid_height-3)
         self.green_box = SolidColorImagePattern((100,240,100,255)).create_image(self.grid_width-1,self.grid_height-1)
         self.blue_box = SolidColorImagePattern((110,150,220,255)).create_image(self.grid_width-1,self.grid_height-1)
         self.blue_inner_box = SolidColorImagePattern((70,110,220,255)).create_image(self.grid_width-3,self.grid_height-3)
+        self.playground.update_player_shape(0,0)
 
     def set_context(self, context):
         self.context = context
@@ -196,7 +194,6 @@ class Running(GameState):
         min_delay = 1/Running.speed
         if time() - self.prev_time > min_delay:
             self.playground.update_player_shape(0,-1)
-            #self.draw_playground()
             self.prev_time = time()
 
     def on_draw(self):
