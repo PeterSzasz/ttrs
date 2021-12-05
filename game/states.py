@@ -137,6 +137,7 @@ class Running(GameState):
         self.blue_box = SolidColorImagePattern((110,150,220,255)).create_image(self.grid_width-1,self.grid_height-1)
         self.blue_inner_box = SolidColorImagePattern((70,110,220,255)).create_image(self.grid_width-3,self.grid_height-3)
         self.playground.update_player_shape(0,0)
+        self.stuck = 0
 
     def set_context(self, context):
         self.context = context
@@ -152,19 +153,18 @@ class Running(GameState):
                     # tetris tetrominoes
                     scene_coords = (col-self.left_border, row)
                     grid_color = self.playground.get_grid_color(*scene_coords)
-                    if grid_color is not None:
-                        if grid_color == "blue":
-                            self.context.image.blit_into(self.blue_box, x+1, y+1, 0)
-                            self.context.image.blit_into(self.blue_inner_box, x+1, y+3, 0)
-                            #self.context.image.blit_into(self.white_pixel, x+1, y+self.grid_height-2, 0)
-                            #self.context.image.blit_into(self.white_pixel, x+3, y+self.grid_height-4, 0)
-                            #self.context.image.blit_into(self.white_pixel, x+3, y+self.grid_height-6, 0)
-                            #self.context.image.blit_into(self.white_pixel, x+5, y+self.grid_height-4, 0)
-                        if grid_color == "red":
-                            self.context.image.blit_into(self.red_box, x+1, y+1, 0)
-                            self.context.image.blit_into(self.red_inner_box, x+1, y+3, 0)
-                        if grid_color == 'black':
-                            self.context.image.blit_into(self.black_box, x+1, y+1, 0)
+                    if grid_color == "blue":
+                        self.context.image.blit_into(self.blue_box, x+1, y+1, 0)
+                        self.context.image.blit_into(self.blue_inner_box, x+1, y+3, 0)
+                        #self.context.image.blit_into(self.white_pixel, x+1, y+self.grid_height-2, 0)
+                        #self.context.image.blit_into(self.white_pixel, x+3, y+self.grid_height-4, 0)
+                        #self.context.image.blit_into(self.white_pixel, x+3, y+self.grid_height-6, 0)
+                        #self.context.image.blit_into(self.white_pixel, x+5, y+self.grid_height-4, 0)
+                    if grid_color == "red":
+                        self.context.image.blit_into(self.red_box, x+1, y+1, 0)
+                        self.context.image.blit_into(self.red_inner_box, x+1, y+3, 0)
+                    if grid_color == 'black':
+                        self.context.image.blit_into(self.black_box, x+1, y+1, 0)
                 row += 1
             col += 1
             row = 0
@@ -193,7 +193,12 @@ class Running(GameState):
         self.label.text = f"Speed: {Running.speed}  Score: {Running.score}"
         min_delay = 1/Running.speed
         if time() - self.prev_time > min_delay:
-            self.playground.update_player_shape(0,-1)
+            if not self.playground.update_player_shape(0,-1):
+                self.stuck += 1
+                if self.stuck >= 2:
+                    self.playground.lock_player_shape()
+                    self.playground.generate_new_shape()
+                    self.stuck = 0
             self.prev_time = time()
 
     def on_draw(self):

@@ -12,7 +12,7 @@ class Map:
         rand_shape = random.choice(list(self.shapes.tetrominoes.keys()))
         self.player_shape = self.shapes.tetrominoes[rand_shape]
         self.player_pivot = (map_width//2,map_height-1)
-        self.test_assets()
+        #self.test_assets()
         
     def update_player_shape(self, offset_x, offset_y ):
         valid = True
@@ -32,6 +32,21 @@ class Map:
                 x = self.player_pivot[0] + grid[0]
                 y = self.player_pivot[1] + grid[1]
                 self.color_grid(x,y,color)
+        print(f"valid: {valid}")
+        return valid
+
+    def lock_player_shape(self):
+        print(self.player_pivot)
+        for grid in self.player_shape['coords']:
+            x = self.player_pivot[0] + grid[0]
+            y = self.player_pivot[1] + grid[1]
+            self.color_grid(x,y,'blue')
+            print(f'blue: {x}:{y}')
+
+    def generate_new_shape(self):
+        rand_shape = random.choice(list(self.shapes.tetrominoes.keys()))
+        self.player_shape = self.shapes.tetrominoes[rand_shape]
+        self.player_pivot = (self.map_width//2,self.map_height-1)
 
     def rotate_player(self, clockwise=True):
         new_shape_coords = []
@@ -62,8 +77,10 @@ class Map:
         x: [int] starts with 0
         y: [int] starts with 0
         '''
-        if  0<=x and x<self.map_width and \
-            0<=y:
+        if  0<=x and x<self.map_width and 0<=y:
+            if y<self.map_height and self.table[x][y] == 'blue':
+                return False
+            else:
                 return True
         return False
 
@@ -73,7 +90,8 @@ class Map:
         x: [int] starts with 0
         y: [int] starts with 0
         '''
-        if self.is_valid(x,y) and self.table[x][y] is not None:
+        if 0<=x and x<self.map_width and 0<=y and y<self.map_height \
+            and self.table[x][y] is not None:
                 return self.table[x][y]
         return None
 
