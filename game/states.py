@@ -190,9 +190,9 @@ class Running(GameState):
 
     def on_update(self, delta_time):
         ''''''
-        self.label.text = f"Speed: {Running.speed}  Score: {Running.score}"
+        self.label.text = f"Speed: {Running.speed}   Score: {Running.score}"
         min_delay = 1/Running.speed
-        if time() - self.prev_time > min_delay:
+        if time() - self.prev_time > min_delay and not self.playground.full:
             if not self.playground.update_player_shape(0,-1):
                 self.stuck += 1
                 if self.stuck >= 2:
@@ -200,6 +200,8 @@ class Running(GameState):
                     self.playground.generate_new_shape()
                     self.stuck = 0
             self.prev_time = time()
+        if self.playground.full:
+            self.label.text = f"Game Over! Score: {Running.score}"
 
     def on_draw(self):
         ''''''

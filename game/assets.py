@@ -12,6 +12,7 @@ class Map:
         rand_shape = random.choice(list(self.shapes.tetrominoes.keys()))
         self.player_shape = self.shapes.tetrominoes[rand_shape]
         self.player_pivot = (map_width//2,map_height-1)
+        self.full = False
         #self.test_assets()
         
     def update_player_shape(self, offset_x, offset_y ):
@@ -46,7 +47,16 @@ class Map:
     def generate_new_shape(self):
         rand_shape = random.choice(list(self.shapes.tetrominoes.keys()))
         self.player_shape = self.shapes.tetrominoes[rand_shape]
-        self.player_pivot = (self.map_width//2,self.map_height-1)
+        x = self.map_width//2
+        y = self.map_height-1
+        if self.is_valid(x,y):
+            self.player_pivot = (x,y)
+        elif self.is_valid(x-2,y):
+            self.player_pivot = (x-2,y)
+        elif self.is_valid(x+2,y):
+            self.player_pivot = (x+2,y)
+        else:
+            self.full = True
 
     def rotate_player(self, clockwise=True):
         new_shape_coords = []
