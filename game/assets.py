@@ -13,7 +13,6 @@ class Map:
         self.player_shape = self.shapes.tetrominoes[rand_shape]
         self.player_pivot = (map_width//2,map_height-1)
         self.full = False
-        #self.test_assets()
         
     def update_player_shape(self, offset_x, offset_y ):
         valid = True
@@ -33,7 +32,6 @@ class Map:
                 x = self.player_pivot[0] + grid[0]
                 y = self.player_pivot[1] + grid[1]
                 self.color_grid(x,y,color)
-        print(f"valid: {valid}")
         return valid
 
     def lock_player_shape(self):
@@ -42,7 +40,6 @@ class Map:
             x = self.player_pivot[0] + grid[0]
             y = self.player_pivot[1] + grid[1]
             self.color_grid(x,y,'blue')
-            print(f'blue: {x}:{y}')
 
     def generate_new_shape(self):
         rand_shape = random.choice(list(self.shapes.tetrominoes.keys()))

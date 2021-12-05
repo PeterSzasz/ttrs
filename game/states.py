@@ -114,6 +114,7 @@ class Running(GameState):
     '''Game state for gameplay. Draws playground, handles shapes, scores, etc'''
     score = 0
     speed = 1
+    saved_map = None
 
     def __init__(self, new_game=True, context=None) -> None:
         ''''''
@@ -127,8 +128,10 @@ class Running(GameState):
         self.label = Label("", x=20, y=self.context.height-226, font_size=15, color=(200,200,200,255),)
         if new_game:
             Running.score = 0
+            self.playground = Map(map_width, map_height)
+        else:
+            self.playground = Running.saved_map
         self.shapes = Shapes()
-        self.playground = Map(map_width, map_height)
         self.prev_time = time()
         self.black_box = SolidColorImagePattern((0,0,0,255)).create_image(self.grid_width-1,self.grid_height-1)
         self.red_box = SolidColorImagePattern((220,150,110,255)).create_image(self.grid_width-1,self.grid_height-1)
@@ -212,6 +215,7 @@ class Running(GameState):
         self.context.set_state(Menu(self.context))
 
     def s_key(self):
+        Running.saved_map = self.playground
         self.context.set_state(Scores(self.context))
 
     def space_key(self):
