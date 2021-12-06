@@ -35,7 +35,6 @@ class Map:
         return valid
 
     def lock_player_shape(self):
-        print(self.player_pivot)
         for grid in self.player_shape['coords']:
             x = self.player_pivot[0] + grid[0]
             y = self.player_pivot[1] + grid[1]
@@ -77,6 +76,7 @@ class Map:
                 x = self.player_pivot[0] + grid[0]
                 y = self.player_pivot[1] + grid[1]
                 self.color_grid(x,y,color)
+        return valid
 
     def is_valid(self, x, y):
         '''

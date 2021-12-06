@@ -1,7 +1,10 @@
 /workspace.code-workspace
 /__pycache__
 game/__pycache__
-.vscode/launch.json
+.vscode/
+.venv/
+attic/
 /build
 /dist
 main.spec
+sound/SFX/

@@ -3,6 +3,7 @@
 # context is the GUI class
 
 from time import time
+from simpleaudio import WaveObject
 from pyglet import window
 from pyglet.app import exit
 from pyglet.text import Label
@@ -37,6 +38,7 @@ class Menu(GameState):
         self.context = context
         toprow = self.context.height - 226
         offset = self.context.grid_height
+        self.start_game_sound = WaveObject.from_wave_file('sound/start.wav')
         self.label1 = Label("", x=20, y=toprow-offset*0, font_size=15, color=(200,200,200,255),)
         self.label2 = Label("", x=20, y=toprow-offset*1, font_size=15, color=(200,200,200,255),)
         self.label3 = Label("", x=20, y=toprow-offset*2, font_size=15, color=(200,200,200,255),)
@@ -85,6 +87,7 @@ class Menu(GameState):
 
     def space_key(self):
         ''''''
+        self.start_game_sound.play()
         self.context.set_state(Running(new_game=True,context=self.context))
 
     def left_key(self):
@@ -125,7 +128,10 @@ class Running(GameState):
         self.right_border = 15
         map_width = self.right_border - self.left_border
         map_height = (self.context.height // self.context.grid_height)
-        self.label = Label("", x=20, y=self.context.height-226, font_size=15, color=(200,200,200,255),)
+        self.rotate_shape_sound = WaveObject.from_wave_file('sound/rotate.wav')
+        self.stuck_shape_sound = WaveObject.from_wave_file('sound/stuck_shape.wav')
+        self.game_over_sound = WaveObject.from_wave_file('sound/game_over.wav')
+        self.label = Label(f"Game Over! Score: {Running.score}", x=20, y=self.context.height-226, font_size=15, color=(200,200,200,255),)
         if new_game:
             Running.score = 0
             self.playground = Map(map_width, map_height)
@@ -174,14 +180,15 @@ class Running(GameState):
 
     def on_key_press(self, key, modifiers):
         ''''''
-        if key == window.key.LEFT:
-            self.left_key()
-        if key == window.key.RIGHT:
-            self.right_key()
-        if key == window.key.DOWN:
-            self.down_key()
-        if key == window.key.SPACE:
-            self.space_key()
+        if not self.playground.full:
+            if key == window.key.LEFT:
+                self.left_key()
+            if key == window.key.RIGHT:
+                self.right_key()
+            if key == window.key.DOWN:
+                self.down_key()
+            if key == window.key.SPACE:
+                self.space_key()
         if key == window.key.ESCAPE:
             self.esc_key()
         if key == window.key.S:
@@ -193,18 +200,21 @@ class Running(GameState):
 
     def on_update(self, delta_time):
         ''''''
-        self.label.text = f"Speed: {Running.speed}   Score: {Running.score}"
-        min_delay = 1/Running.speed
-        if time() - self.prev_time > min_delay and not self.playground.full:
-            if not self.playground.update_player_shape(0,-1):
-                self.stuck += 1
-                if self.stuck >= 2:
-                    self.playground.lock_player_shape()
-                    self.playground.generate_new_shape()
-                    self.stuck = 0
-            self.prev_time = time()
-        if self.playground.full:
-            self.label.text = f"Game Over! Score: {Running.score}"
+        if not self.playground.full:
+            step_delay = 1/Running.speed
+            self.label.text = f"Speed: {Running.speed}       Score: {Running.score}"
+            if time() - self.prev_time > step_delay:
+                if not self.playground.update_player_shape(0,-1):
+                    self.stuck += 1
+                    if self.stuck >= 2:
+                        self.stuck_shape_sound.play()
+                        self.playground.lock_player_shape()
+                        self.playground.generate_new_shape()
+                        if self.playground.full:
+                            self.game_over_sound.play()
+                            self.label.text = f"Game Over! Score: {Running.score}"
+                        self.stuck = 0
+                self.prev_time = time()
 
     def on_draw(self):
         ''''''
@@ -219,9 +229,10 @@ class Running(GameState):
         self.context.set_state(Scores(self.context))
 
     def space_key(self):
-        Running.score += 1
-        self.playground.rotate_player()
-        self.draw_playground()
+        if self.playground.rotate_player():
+            Running.score += 1
+            self.rotate_shape_sound.play()
+            self.draw_playground()
 
     def left_key(self):
         self.playground.update_player_shape(-1,0)
@@ -248,7 +259,7 @@ class Scores(GameState):
 
     def on_key_press(self, key, modifiers):
         ''''''
-        if key == window.key.SPACE:
+        if key == window.key.SPACE or key == window.key.S:
             self.space_key()
         if key == window.key.ESCAPE:
             self.esc_key()
