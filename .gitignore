@@ -6,5 +6,6 @@ game/__pycache__
 attic/
 /build
 /dist
+TTRS.spec
 main.spec
 sound/SFX/

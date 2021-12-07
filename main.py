@@ -1,6 +1,11 @@
 
 # tetris main window, state initialization, main loop start
 
+import sys
+from os import chdir
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    chdir(sys._MEIPASS)
+
 from pyglet.window import Window
 from pyglet import app, clock
 from game.scene import GUI
