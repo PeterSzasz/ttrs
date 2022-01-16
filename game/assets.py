@@ -55,6 +55,13 @@ class Map:
             self.full = True
 
     def rotate_player(self, clockwise=True):
+        '''
+        Rotate right (by default) or left 90 degree the given shape.
+        rot matrix for 90degr: [(0,-1),(1,0)]
+        rot matrix for -90degr: [(0,1),(-1,0)]
+        cw: sin(90)=-1 cos(90)=0
+        cc: sin(90)=1 cos(90)=0
+        '''
         new_shape_coords = []
         valid = True
         for coord in self.player_shape['coords']:
@@ -162,6 +169,8 @@ class Shapes:
 
     def rotate(self, shape, clockwise=True):
         '''
+        Deprecated. (uses boundind box technic and no validity check)
+
         Rotate right (by default) or left 90 degree the given shape.
         rot matrix for 90degr: [(0,-1),(1,0)]
         rot matrix for -90degr: [(0,1),(-1,0)]
